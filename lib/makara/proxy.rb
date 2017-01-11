@@ -160,14 +160,30 @@ module Makara
     # with back with this proxy.
     def appropriate_connection(method_name, args)
       appropriate_pool(method_name, args) do |pool|
-        pool.provide do |connection|
+        con = pool.provide(false) do |connection|
           hijacked do
             yield connection
           end
         end
+        return con if con
+
+        if con.nil? && pool.role == 'slave'
+          begin
+            without_sticking do
+              yield @master_pool.connections.first
+            end
+          ensure
+            @slave_pool.connections.each(&:_makara_whitelist!)
+            Thread.new do
+              @slave_pool.provide do |connection|
+                yield connection
+                Thread.current.kill
+              end
+            end
+          end
+        end
       end
     end
-
 
     # master or slave
     def appropriate_pool(method_name, args)

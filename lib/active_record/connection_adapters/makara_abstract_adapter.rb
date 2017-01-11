@@ -28,7 +28,8 @@ module ActiveRecord
           /timeout expired/,
           /could not translate host name/,
           /timeout waiting for a response/,
-          /the database system is (starting|shutting)/
+          /the database system is (starting|shutting)/,
+          /ssl syscall error: eof detected/
         ].map(&:freeze).freeze
 
 
