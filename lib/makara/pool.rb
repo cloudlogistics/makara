@@ -95,7 +95,7 @@ module Makara
 
     # Provide a connection that is not blacklisted and connected. Handle any errors
     # that may occur within the block.
-    def provide
+    def provide(should_retry = true)
       provided_connection = self.next
 
       # nil implies that it's blacklisted
@@ -122,7 +122,7 @@ module Makara
     rescue Makara::Errors::BlacklistConnection => e
       @blacklist_errors.insert(0, e)
       provided_connection._makara_blacklist!
-      retry
+      retry if should_retry
     end
 
 
